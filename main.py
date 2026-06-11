@@ -1,7 +1,8 @@
 import sys
+import os
 from scripts.extract_mysql import extract_from_mysql
 from scripts.upload_gcs import upload_to_gcs
-from scripts.load_snowflake import load_gcs_to_snowflake
+from scripts.load_duckdb import load_csv_to_duckdb
 
 def run_pipeline(table_name):
     print("==================================================")
@@ -24,16 +25,17 @@ def run_pipeline(table_name):
     upload_success = upload_to_gcs(local_csv, gcs_blob_name)
     
     if not upload_success:
-        print(f"[FATAL] Pipeline stopped: Upload to GCS failed for file '{local_csv}'.")
-        sys.exit(1)
+        print(f"[WARNING] GCS Upload failed/skipped. Proceeding with local DuckDB load...")
+        # Note: We use a warning instead of a fatal exit here so you can still 
+        # completely test your pipeline locally even if your Google Cloud credentials aren't set up yet!
         
     # --------------------------------------------------
-    # STEP 3: LOAD (Google Cloud Storage -> Snowflake Warehouse)
+    # STEP 3: LOAD (Local CSV -> Local DuckDB Analytical Database)
     # --------------------------------------------------
-    load_success = load_gcs_to_snowflake(table_name, gcs_blob_name)
+    load_success = load_csv_to_duckdb(table_name)
     
     if not load_success:
-        print(f"[FATAL] Pipeline stopped: Loading into Snowflake failed for table '{table_name}'.")
+        print(f"[FATAL] Pipeline stopped: Loading into DuckDB failed for table '{table_name}'.")
         sys.exit(1)
 
     print("==================================================")
@@ -41,7 +43,7 @@ def run_pipeline(table_name):
     print("==================================================\n")
 
 if __name__ == "__main__":
-    # Define the list of tables you want to sync from your e-commerce platform
+    # Define the list of tables you want to sync from your e-commerce backend database
     tables_to_sync = ["orders", "products", "customers"]
     
     for table in tables_to_sync:
