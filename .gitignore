@@ -1,0 +1,24 @@
+# Secret Credentials (CRITICAL - NEVER UPLOAD THESE)
+config/settings.py
+config/gcs_key.json
+*.env
+
+# Local Python Virtual Environment
+.venv/
+venv/
+ENV/
+pyvenv.cfg
+
+# Local Data Cache / Temporary CSV Files
+data/
+*.csv
+
+# Python System Cache Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating System Files
+.DS_Store
+Thumbs.db
